@@ -3,35 +3,14 @@ import tensorflow as tf
 from tensorflow.python.framework import ops, dtypes
 import numpy as np
 from matplotlib import pyplot as plt
-import Image
-
-o = 'New_York_night.jpg'
-s = 'rubble.jpg'
-si = Image.open(s)
-oi = Image.open(o)
-
-xs,ys = si.size
-xo,yo = oi.size
-xn,yn =  min(ys,yo), min(xs,xo)
-print xn,yn
-if si.size != (yn,xn):
-    sout = si.resize((yn,xn),Image.BICUBIC).save(s,"JPEG")
-if oi.size != (yn,xn):    
-    oi.resize((yn,xn),Image.BICUBIC).save(o,"JPEG")
-si.close()
-oi.close()
-
-
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_string('original', o, 'Original Image')
-flags.DEFINE_string('styled', s, 'Styled Image')
+flags.DEFINE_string('original', 'minsk.jpg', 'Original Image')
+flags.DEFINE_string('styled', 'tmp_950_color.jpg', 'Styled Image')
 
-
-
-original = tf.placeholder("float", [1, xn, yn, 3])
-styled = tf.placeholder("float", [1,  xn, yn, 3])
+original = tf.placeholder("float", [1, 338, 600, 3])
+styled = tf.placeholder("float", [1, 338, 600, 3])
 
 def concat_images(imga, imgb):
     """
@@ -82,7 +61,6 @@ def yuv2rgb(yuv):
     return temp
 
 
-
 styled_grayscale = tf.image.rgb_to_grayscale(styled)
 styled_grayscale_rgb = tf.image.grayscale_to_rgb(styled_grayscale)
 styled_grayscale_yuv = rgb2yuv(styled_grayscale_rgb)
@@ -96,12 +74,14 @@ init = tf.initialize_all_variables()
 
 with tf.Session() as sess:
     sess.run(tf.initialize_all_variables())
+
     original_image = skimage.io.imread(FLAGS.original) / 255.0
+    original_image = original_image.reshape((1, 338, 600, 3))
     styled_image = skimage.io.imread(FLAGS.styled) / 255.0
-    original_image = original_image.reshape((1,  xn, yn, 3))    
-    styled_image = styled_image.reshape((1, xn, yn, 3))
+    styled_image = styled_image.reshape((1, 338, 600, 3))
+
     combined_rbg_ = sess.run(combined_rbg, feed_dict={original: original_image, styled: styled_image})
 
-    summary_image = concat_images(original_image.reshape((xn, yn, 3)), styled_image.reshape((xn, yn, 3)))
+    summary_image = concat_images(original_image.reshape((338, 600, 3)), styled_image.reshape((338, 600, 3)))
     summary_image = concat_images(summary_image, combined_rbg_[0])
-    plt.imsave("results1.jpg", summary_image)
+    plt.imsave("results.jpg", summary_image)
