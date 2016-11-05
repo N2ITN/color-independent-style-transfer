@@ -4,6 +4,24 @@ from tensorflow.python.framework import ops, dtypes
 import numpy as np
 from matplotlib import pyplot as plt
 
+o = 'New_York_night.jpg'
+s = 'New_York_night_picasso.jpg'
+si = Image.open(s)
+oi = Image.open(o)
+
+xs,ys = si.size
+xo,yo = oi.size
+xn,yn =  min(ys,yo), min(xs,xo)
+print xn,yn
+if si.size != (yn,xn):
+    sout = si.resize((yn,xn),Image.BICUBIC).save(s,"JPEG")
+if oi.size != (yn,xn):    
+    oi.resize((yn,xn),Image.BICUBIC).save(o,"JPEG")
+si.close()
+oi.close()
+
+
+
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_string('original', 'minsk.jpg', 'Original Image')
